@@ -48,5 +48,13 @@ List<String> matches = recognito.recognize(new File("SomeFatGuy.wav"));
 System.out.println("Elvis is back : " + matches.get(0).equals("Elvis"));
 ```
 
-Admittedly, this should be easy enough when you're using files but it's not the whole story. Please check the API for other vocal print extraction methods.
+Admittedly, this should be easy enough when you're using files but it's not the whole story. Please check the API for other vocal print extraction methods in case files are not an option for you.
+
 One missing feature that's high on my TODO list is automatic handling of microphone input : automatically stop when the user stops talking or after a predefined delay.
+
+## About the author
+Amaury Crickx : I am by no means a speech processing academic expert, just a Java geek who happens to also be an experienced sound engineer. Hopefully, this project might attract more knowledgeable ppl and I'll see that the software remains usable for regular developers out there. In the meantime, I'm learning a lot from the reference book on the subject : Fundamentals of Speaker Recognition - Homayoon Beigi
+
+So if you happen to have some knowledge of Speaker Recognition and want to help, you're most welcome !
+
+FWIW, I'll be presenting "Vocal Print for Dummies" at DevoxxFR 2014 with the help of this lib as didactic material.
