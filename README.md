@@ -38,9 +38,9 @@ Recognito<String> recognito = new Recognito<>();
 
 VocalPrint print = recognito.createVocalPrint("Elvis", new File("OldInterview.wav"));
 
-// handle persistence the way you want
-myUser.setVocalPrint(print);
-userDao.saveOrUpdate(myUser);
+// handle persistence the way you want, e.g.:
+// myUser.setVocalPrint(print);
+// userDao.saveOrUpdate(myUser);
         
 // Now check if the King is back
 List<String> matches = recognito.recognize(new File("SomeFatGuy.wav"));
