@@ -123,13 +123,14 @@ public class Recognito<K> {
     /**
      * Convenience method to load vocal samples from files.
      * <p>
-     * See class description for more info
+     * See class description for details on files
      * </p>
      * @param userKey the user key associated with this vocal print
      * @param vocalSampleFile the file containing the vocal sample
      * @return the vocal print
      * @throws UnsupportedAudioFileException when the JVM does not support the file format
      * @throws IOException when an I/O exception occurs
+     * @see Recognito#createVocalPrint(Object, double[], float)
      */
     public VocalPrint createVocalPrint(K userKey, File vocalSampleFile) 
             throws UnsupportedAudioFileException, IOException {
@@ -169,15 +170,16 @@ public class Recognito<K> {
     }
     
     /**
-     * Convenience method to merge vocal samples from files.
+     * Convenience method to merge vocal samples from files. 
      * <p>
-     * See class description for more info
+     * See class description for details on files
      * </p>
      * @param userKey the user key associated with this vocal print
      * @param vocalSampleFile the file containing the vocal sample
      * @return the updated vocal print
      * @throws UnsupportedAudioFileException when the JVM does not support the file format
      * @throws IOException when an I/O exception occurs
+     * @see Recognito#mergeVocalSample(Object, double[], float)
      */
     public VocalPrint mergeVocalSample(K userKey, File vocalSampleFile) 
             throws UnsupportedAudioFileException, IOException {
@@ -190,7 +192,8 @@ public class Recognito<K> {
     }
 
     /**
-     * Compares this vocal sample to the vocal prints available and returns the associated user keys of the 3 closest matches
+     * Calculates the distance between this vocal sample and the vocal prints previously extracted 
+     * and returns the associated user keys of the 3 closest matches
      * <p>
      * Usage of a closed set is assumed : the speaker's vocal print was extracted before and is known to the system.
      * This means you'll always get results even if the speaker is absolutely unknown to the system.
@@ -227,12 +230,13 @@ public class Recognito<K> {
     /**
      * Convenience method to recognize vocal samples from files.
      * <p>
-     * See class description for more info
+     * See class description for details on files
      * </p>
      * @param vocalSampleFile the file containing the vocal sample
      * @return a list of user keys that might match this vocal sample
      * @throws UnsupportedAudioFileException when the JVM does not support the file format
      * @throws IOException when an I/O exception occurs
+     * @see Recognito#recognize(double[], float)
      */
     public  List<K> recognize(File vocalSampleFile) 
             throws UnsupportedAudioFileException, IOException {
@@ -243,7 +247,6 @@ public class Recognito<K> {
 
         return recognize(audioSample, format.getSampleRate());
     }
-
   
     /**
      * Removes silence, applies normailzation and extracts vocal features from the given sample
