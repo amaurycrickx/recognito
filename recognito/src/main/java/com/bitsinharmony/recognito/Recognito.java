@@ -249,7 +249,7 @@ public class Recognito<K> {
     }
   
     /**
-     * Removes silence, applies normailzation and extracts voice features from the given sample
+     * Removes silence, applies normalization and extracts voice features from the given sample
      * @param voiceSample the voice sample
      * @param sampleRate the sample rate
      * @return the extracted features
