@@ -28,7 +28,7 @@ public class DiscreteAutocorrelationAtLagJ {
      * Computes discrete autocorrelation at lag j
      * 
      * @param buffer the buffered signal
-     * @param lag the lag, in the range -1 &lt; lag &lt; vocalSample size
+     * @param lag the lag, in the range -1 &lt; lag &lt; voiceSample size
      * @return the computed autocorrelation result
      */
     public double autocorrelate(double[] buffer, int lag) {

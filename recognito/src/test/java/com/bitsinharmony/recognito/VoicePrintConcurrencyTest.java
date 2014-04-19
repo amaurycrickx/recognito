@@ -36,32 +36,32 @@ import org.junit.Test;
 import com.bitsinharmony.recognito.distances.DistanceCalculator;
 
 /**
- * Tests VocalPrint under concurrent calls
+ * Tests VoicePrint under concurrent calls
  * @author Amaury Crickx
  */
-public class VocalPrintConcurrencyTest {
+public class VoicePrintConcurrencyTest {
     
     private static final int CONCURRENCY_LEVEL = 100;
     private static final int FEATURES_LENGTH = 10000;
 
-    private VocalPrint sut;
+    private VoicePrint sut;
 
-    private List<Runnable> vocalPrintProducers;
+    private List<Runnable> voicePrintProducers;
     private List<Callable<Double>> featuresConsistencyVerifiers;
     private double[][] allFeatures;
 
     @Before
     public void setUp() {
 
-        sut = new VocalPrint(new double[FEATURES_LENGTH]);
+        sut = new VoicePrint(new double[FEATURES_LENGTH]);
 
-        vocalPrintProducers = new ArrayList<Runnable>();
+        voicePrintProducers = new ArrayList<Runnable>();
         featuresConsistencyVerifiers = new ArrayList<Callable<Double>>();
         allFeatures = new double[CONCURRENCY_LEVEL ][FEATURES_LENGTH];
         
         for(int i = 0; i < CONCURRENCY_LEVEL ; i++) {
             Arrays.fill(allFeatures[i], i + 1.0d);
-            vocalPrintProducers.add(new VocalPrintProducer(sut, allFeatures[i]));
+            voicePrintProducers.add(new VoicePrintProducer(sut, allFeatures[i]));
             featuresConsistencyVerifiers.add(new FeaturesConsistencyVerifier(sut));
         }
     }
@@ -76,7 +76,7 @@ public class VocalPrintConcurrencyTest {
             for(int i = 0; i < CONCURRENCY_LEVEL; i++) {
                 // intermingling merge and getDistance calls
                 // featuresConsistencyVerifiers performing getDistance calls should not see half merged features
-                executorService.submit(vocalPrintProducers.get(i));
+                executorService.submit(voicePrintProducers.get(i));
                 futures.add(executorService.submit(featuresConsistencyVerifiers.get(i)));
             }
             
@@ -93,12 +93,12 @@ public class VocalPrintConcurrencyTest {
 
     }
     
-    private class VocalPrintProducer implements Runnable {
+    private class VoicePrintProducer implements Runnable {
 
         private double[] features;
-        private VocalPrint sut;
+        private VoicePrint sut;
 
-        public VocalPrintProducer(VocalPrint sut, double[] features) {
+        public VoicePrintProducer(VoicePrint sut, double[] features) {
             this.sut = sut;
             this.features = features;
         }
@@ -111,9 +111,9 @@ public class VocalPrintConcurrencyTest {
     
     private class FeaturesConsistencyVerifier implements Callable<Double> {
 
-        private VocalPrint sut;
+        private VoicePrint sut;
 
-        public FeaturesConsistencyVerifier(VocalPrint sut) {
+        public FeaturesConsistencyVerifier(VoicePrint sut) {
             this.sut = sut;
         }
         

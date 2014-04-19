@@ -35,32 +35,32 @@ public class LpcFeaturesExtractor
     }
 
     @Override
-    public double[] extractFeatures(double[] vocalSample) {
+    public double[] extractFeatures(double[] voiceSample) {
 
-        double[] vocalFeatures = new double[poles];
+        double[] voiceFeatures = new double[poles];
         double[] audioWindow = new double[windowSize];
 
         int counter = 0;
         int halfWindowLength = windowSize / 2;
 
-        for (int i = 0; (i + windowSize) <= vocalSample.length; i += halfWindowLength) {
+        for (int i = 0; (i + windowSize) <= voiceSample.length; i += halfWindowLength) {
 
-            System.arraycopy(vocalSample, i, audioWindow, 0, windowSize);
+            System.arraycopy(voiceSample, i, audioWindow, 0, windowSize);
 
             windowFunction.applyFunction(audioWindow);
             double[] lpcCoeffs = lpc.applyLinearPredictiveCoding(audioWindow)[0];
 
             for (int j = 0; j < poles; j++) {
-                vocalFeatures[j] += lpcCoeffs[j];
+                voiceFeatures[j] += lpcCoeffs[j];
             }
             counter++;
         }
 
         if (counter > 1) {
             for (int i = 0; i < poles; i++) {
-                vocalFeatures[i] /= counter;
+                voiceFeatures[i] /= counter;
             }
         }
-        return vocalFeatures;
+        return voiceFeatures;
     }
 }

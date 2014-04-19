@@ -36,39 +36,39 @@ public class RecognitoTest {
     private static final int DEFAULT_SAMPLE_RATE = 22050;
 
     private Recognito<String> recognito;
-    private double[] vocalSample;
+    private double[] voiceSample;
     
     @Before
     public void setUp() {
         recognito = new Recognito<String>();
-        vocalSample = new double[0];
+        voiceSample = new double[0];
     }
     
     @Test(expected = NullPointerException.class)
-    public void createVocalPrintThrowsNullPointerExceptionWhenTheUserKeyIsNull() {
-        recognito.createVocalPrint(null, vocalSample, DEFAULT_SAMPLE_RATE);
+    public void createVoicePrintThrowsNullPointerExceptionWhenTheUserKeyIsNull() {
+        recognito.createVoicePrint(null, voiceSample, DEFAULT_SAMPLE_RATE);
     }
     
     @Test
-    public void createVocalPrintReturnsVocalPrint() {
-        recognito.createVocalPrint("duh", vocalSample, DEFAULT_SAMPLE_RATE);
+    public void createVoicePrintReturnsVoicePrint() {
+        recognito.createVoicePrint("duh", voiceSample, DEFAULT_SAMPLE_RATE);
         
     }
     
     @Test(expected = NullPointerException.class)
-    public void addVocalSampleForThrowsNullPointerExceptionWhenTheUserKeyIsNull() {
-        recognito.mergeVocalSample(null, vocalSample, DEFAULT_SAMPLE_RATE);
+    public void addVoiceSampleForThrowsNullPointerExceptionWhenTheUserKeyIsNull() {
+        recognito.mergeVoiceSample(null, voiceSample, DEFAULT_SAMPLE_RATE);
     }
     
     @Test(expected = IllegalArgumentException.class)
-    public void addVocalSampleForThrowsIllegalArgumentExceptionWhenTheUserKeyIsUnknown() {
-        recognito.mergeVocalSample("duh", vocalSample, DEFAULT_SAMPLE_RATE);
+    public void addVoiceSampleForThrowsIllegalArgumentExceptionWhenTheUserKeyIsUnknown() {
+        recognito.mergeVoiceSample("duh", voiceSample, DEFAULT_SAMPLE_RATE);
     }
     
     @Test
-    public void addVocalSampleForAddsTheVocalPrintToThePreviousVocalPrintInstance(@Mocked final VocalPrint unused) {
-        final VocalPrint initial = recognito.createVocalPrint("test", vocalSample, DEFAULT_SAMPLE_RATE);
-        recognito.mergeVocalSample("test", vocalSample, DEFAULT_SAMPLE_RATE);
+    public void addVoiceSampleForAddsTheVoicePrintToThePreviousVoicePrintInstance(@Mocked final VoicePrint unused) {
+        final VoicePrint initial = recognito.createVoicePrint("test", voiceSample, DEFAULT_SAMPLE_RATE);
+        recognito.mergeVoiceSample("test", voiceSample, DEFAULT_SAMPLE_RATE);
         
         new Verifications() {{
             onInstance(initial).merge((double[]) any);
@@ -77,21 +77,21 @@ public class RecognitoTest {
     
     @Test
     public void recognizeReturnsListOf3UserKeysOrderedByClosestDistance() {
-        final VocalPrint vp1 = recognito.createVocalPrint("1", vocalSample, DEFAULT_SAMPLE_RATE);
-        final VocalPrint vp2 = recognito.createVocalPrint("2", vocalSample, DEFAULT_SAMPLE_RATE);
-        final VocalPrint vp3 = recognito.createVocalPrint("3", vocalSample, DEFAULT_SAMPLE_RATE);
-        final VocalPrint vp4 = recognito.createVocalPrint("4", vocalSample, DEFAULT_SAMPLE_RATE);
-        final VocalPrint vp5 = recognito.createVocalPrint("5", vocalSample, DEFAULT_SAMPLE_RATE);
+        final VoicePrint vp1 = recognito.createVoicePrint("1", voiceSample, DEFAULT_SAMPLE_RATE);
+        final VoicePrint vp2 = recognito.createVoicePrint("2", voiceSample, DEFAULT_SAMPLE_RATE);
+        final VoicePrint vp3 = recognito.createVoicePrint("3", voiceSample, DEFAULT_SAMPLE_RATE);
+        final VoicePrint vp4 = recognito.createVoicePrint("4", voiceSample, DEFAULT_SAMPLE_RATE);
+        final VoicePrint vp5 = recognito.createVoicePrint("5", voiceSample, DEFAULT_SAMPLE_RATE);
 
         new NonStrictExpectations(vp1, vp2, vp3, vp4, vp5) {{
-            vp1.getDistance((DistanceCalculator) any, (VocalPrint) any); result = 5.0D;
-            vp2.getDistance((DistanceCalculator) any, (VocalPrint) any); result = 4.0D;
-            vp3.getDistance((DistanceCalculator) any, (VocalPrint) any); result = 3.0D;
-            vp4.getDistance((DistanceCalculator) any, (VocalPrint) any); result = 2.0D;
-            vp5.getDistance((DistanceCalculator) any, (VocalPrint) any); result = 1.0D;
+            vp1.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 5.0D;
+            vp2.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 4.0D;
+            vp3.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 3.0D;
+            vp4.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 2.0D;
+            vp5.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 1.0D;
         }};
         
-        List<String> keys = recognito.recognize(vocalSample, DEFAULT_SAMPLE_RATE);
+        List<String> keys = recognito.recognize(voiceSample, DEFAULT_SAMPLE_RATE);
 
         assertThat(keys.get(0), is(equalTo("5")));
         assertThat(keys.get(1), is(equalTo("4"))); 
@@ -102,15 +102,15 @@ public class RecognitoTest {
     @Test
     public void identifySpeakerDoesntBreakWithOnlyTwoSpeakers() {
         
-        final VocalPrint vp1 = recognito.createVocalPrint("1", vocalSample, DEFAULT_SAMPLE_RATE);
-        final VocalPrint vp2 = recognito.createVocalPrint("2", vocalSample, DEFAULT_SAMPLE_RATE);
+        final VoicePrint vp1 = recognito.createVoicePrint("1", voiceSample, DEFAULT_SAMPLE_RATE);
+        final VoicePrint vp2 = recognito.createVoicePrint("2", voiceSample, DEFAULT_SAMPLE_RATE);
 
         new NonStrictExpectations(vp1, vp2) {{
-            vp1.getDistance((DistanceCalculator) any, (VocalPrint) any); result = 5.0D;
-            vp2.getDistance((DistanceCalculator) any, (VocalPrint) any); result = 4.0D;
+            vp1.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 5.0D;
+            vp2.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 4.0D;
         }};
         
-        List<String> keys = recognito.recognize(vocalSample, DEFAULT_SAMPLE_RATE);
+        List<String> keys = recognito.recognize(voiceSample, DEFAULT_SAMPLE_RATE);
 
         assertThat(keys.get(0), is(equalTo("2")));
         assertThat(keys.get(1), is(equalTo("1"))); 

@@ -26,8 +26,8 @@ import com.bitsinharmony.recognito.vad.AutocorrellatedVoiceActivityDetectorTest;
     LpcFeaturesExtractorTest.class,
     AutocorrellatedVoiceActivityDetectorTest.class,
     RecognitoTest.class, 
-    VocalPrintConcurrencyTest.class, 
-    VocalPrintTest.class
+    VoicePrintConcurrencyTest.class, 
+    VoicePrintTest.class
 })
 
 public class AllTests {}

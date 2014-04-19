@@ -25,10 +25,10 @@ package com.bitsinharmony.recognito.features;
 public interface FeaturesExtractor<T> {
 
     /**
-     * Extracts vocal features from given vocal sample
-     * @param vocalSample the vocal sample to analyze
+     * Extracts features from given voice sample
+     * @param voiceSample the voice sample to analyze
      * @return An objet of type T representing the features
      */
-    public T extractFeatures(double[] vocalSample);
+    public T extractFeatures(double[] voiceSample);
 
 }

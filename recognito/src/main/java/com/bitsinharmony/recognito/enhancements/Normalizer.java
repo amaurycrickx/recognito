@@ -17,7 +17,7 @@
 package com.bitsinharmony.recognito.enhancements;
 
 /**
- * Nomalizes gain of the given vocal sample.
+ * Nomalizes gain of the given voice sample.
  * I.e. : looks for the highest value (positive or negative) and applies uniform gain on all samples
  * bringing the highest value to max value of 1.0 or -1.0
  * <p>
@@ -31,7 +31,7 @@ public class Normalizer {
 
     /**
      * Normalize gain of the given sample. The given audio buffer is directly modified.
-     * @param audioSample the vocal sample
+     * @param audioSample the voice sample
      * @param sampleRate the sample rate
      * @return the applied factor (i.e. 1.0 / Math.abs(maxValue))
      */

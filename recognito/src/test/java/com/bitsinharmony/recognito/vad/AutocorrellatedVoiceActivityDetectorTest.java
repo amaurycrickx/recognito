@@ -47,23 +47,23 @@ public class AutocorrellatedVoiceActivityDetectorTest {
     
     @Test
     public void vadReturnsOriginalAudioBufferWhenThereIsNoDetectableSilence() {
-        double[] vocalSample = new double[8192];
-        Arrays.fill(vocalSample, 1.0);
+        double[] voiceSample = new double[8192];
+        Arrays.fill(voiceSample, 1.0);
         
-        double[] output = vad.removeSilence(vocalSample, DEFAULT_SAMPLE_RATE);
+        double[] output = vad.removeSilence(voiceSample, DEFAULT_SAMPLE_RATE);
 
-        assertThat(output, is(sameInstance(vocalSample)));
+        assertThat(output, is(sameInstance(voiceSample)));
     }
 
     @Test
-    public void vadReturnsOriginalAudioBufferWhenvocalSampleIsTooSmall() {
+    public void vadReturnsOriginalAudioBufferWhenVoiceSampleIsTooSmall() {
         int vaLength = vad.getMinimumVoiceActivityLength(DEFAULT_SAMPLE_RATE);
-        double[] vocalSample = new double[vaLength - 1];
-        Arrays.fill(vocalSample, 1.0);
+        double[] voiceSample = new double[vaLength - 1];
+        Arrays.fill(voiceSample, 1.0);
         
-        double[] output = vad.removeSilence(vocalSample, DEFAULT_SAMPLE_RATE);
+        double[] output = vad.removeSilence(voiceSample, DEFAULT_SAMPLE_RATE);
 
-        assertThat(output, is(sameInstance(vocalSample)));
+        assertThat(output, is(sameInstance(voiceSample)));
     }
     
     @Test

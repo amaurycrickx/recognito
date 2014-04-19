@@ -68,7 +68,7 @@ public class LpcFeaturesExtractorTest {
     @Test
     public void lpcFeaturesAreAveragesOnTheLpcCoefficientsReturnedByLinearPredictiveCodingAlgorithm() {
         lpc = new LpcFeaturesExtractor(DEFAULT_SAMPLE_RATE, POLES);
-        double[] vocalSample = new double[4096];
+        double[] voiceSample = new double[4096];
         new MockUp<LinearPredictiveCoding>() {
             private int value = 1;
             @Mock double[][] applyLinearPredictiveCoding(double[] window) {
@@ -85,7 +85,7 @@ public class LpcFeaturesExtractorTest {
         // (1 + 2 + 3 + ... + 15) / 15 = 8
         Arrays.fill(reference, 8.0d);
         
-        double[] features = lpc.extractFeatures(vocalSample);
+        double[] features = lpc.extractFeatures(voiceSample);
         
         assertThat(features, is(equalTo(reference)));
     }

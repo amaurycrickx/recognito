@@ -59,7 +59,7 @@ public class LinearPredictiveCoding {
     /**
      * Apply Linear Predictive Coding 
      * 
-     * @param window windowed part of vocal sample, must be of the same size as the windowSize passed in constructor
+     * @param window windowed part of voice sample, must be of the same size as the windowSize passed in constructor
      * @return an array of size 2 containing LPC coefficients in 0 and error coefficients in 1
      */
     public double[][] applyLinearPredictiveCoding(double[] window) {

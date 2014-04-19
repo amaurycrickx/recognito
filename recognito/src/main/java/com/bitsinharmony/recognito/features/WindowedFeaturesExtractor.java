@@ -36,7 +36,7 @@ public abstract class WindowedFeaturesExtractor<T>
 
     /**
      * Base constructor required by this abstract class
-     * @param sampleRate the sample rate of the vocal samples, minimum 8000.0
+     * @param sampleRate the sample rate of the voice samples, minimum 8000.0
      */
     public WindowedFeaturesExtractor(float sampleRate) {
         if(sampleRate < MIN_SAMPLE_RATE) {
@@ -49,7 +49,7 @@ public abstract class WindowedFeaturesExtractor<T>
     /* (non-Javadoc)
      * @see com.recognito.processing.features.FeaturesExtractor#extractFeatures(double[])
      */
-    public abstract T extractFeatures(double[] vocalSample);
+    public abstract T extractFeatures(double[] voiceSample);
 
     /**
      * Called by the constructor of this class.

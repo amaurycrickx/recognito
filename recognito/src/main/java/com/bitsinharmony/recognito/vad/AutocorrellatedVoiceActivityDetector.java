@@ -61,22 +61,22 @@ public class AutocorrellatedVoiceActivityDetector {
     }
 
     /**
-     * Removes silence out of the given vocal sample
-     * @param vocalSample the vocal sample
+     * Removes silence out of the given voice sample
+     * @param voiceSample the voice sample
      * @param sampleRate the sample rate
-     * @return a new vocal sample with silence removed
+     * @return a new voice sample with silence removed
      */
         
-    public double[] removeSilence(double[] vocalSample, float sampleRate) {
+    public double[] removeSilence(double[] voiceSample, float sampleRate) {
         int oneMilliInSamples = (int)sampleRate / 1000;
 
-        int length = vocalSample.length;
+        int length = voiceSample.length;
         int minSilenceLength = MIN_SILENCE_MILLIS * oneMilliInSamples;
         int minActivityLength = getMinimumVoiceActivityLength(sampleRate);
         boolean[] result = new boolean[length];
         
         if(length < minActivityLength) {
-            return vocalSample;
+            return voiceSample;
         }
 
         int windowSize = WINDOW_MILLIS * oneMilliInSamples;
@@ -85,7 +85,7 @@ public class AutocorrellatedVoiceActivityDetector {
         
         
         for(int position = 0; position + windowSize < length; position += windowSize) {
-            System.arraycopy(vocalSample, position, window, 0, windowSize);
+            System.arraycopy(voiceSample, position, window, 0, windowSize);
             double mean = bruteForceAutocorrelation(window, correllation);
             Arrays.fill(result, position, position + windowSize, mean > threshold);
         }
@@ -101,7 +101,7 @@ public class AutocorrellatedVoiceActivityDetector {
             
             int fadeLength = FADE_MILLIS * oneMilliInSamples;
             initFadeFactors(fadeLength);
-            double[] shortenedVocalSample = new double[vocalSample.length - silenceCounter];
+            double[] shortenedVoiceSample = new double[voiceSample.length - silenceCounter];
             int copyCounter = 0;
             for (int i = 0; i < result.length; i++) {
                 if (result[i]) {
@@ -113,15 +113,15 @@ public class AutocorrellatedVoiceActivityDetector {
                     }
                     int endIndex = startIndex + counter;
 
-                    applyFadeInFadeOut(vocalSample, fadeLength, startIndex, endIndex);
-                    System.arraycopy(vocalSample, startIndex, shortenedVocalSample, copyCounter, counter);
+                    applyFadeInFadeOut(voiceSample, fadeLength, startIndex, endIndex);
+                    System.arraycopy(voiceSample, startIndex, shortenedVoiceSample, copyCounter, counter);
                     copyCounter += counter;
                 }
             }
-            return shortenedVocalSample;
+            return shortenedVoiceSample;
             
         } else {
-            return vocalSample;
+            return voiceSample;
         }
     }
 
@@ -136,16 +136,16 @@ public class AutocorrellatedVoiceActivityDetector {
 
     /**
      * Applies a linear fade in / out to the given portion of audio (removes unwanted cracks)
-     * @param vocalSample the vocal sample
+     * @param voiceSample the voice sample
      * @param fadeLength the fade length
      * @param startIndex fade in start point
      * @param endIndex fade out end point
      */
-    private void applyFadeInFadeOut(double[] vocalSample, int fadeLength, int startIndex, int endIndex) {
+    private void applyFadeInFadeOut(double[] voiceSample, int fadeLength, int startIndex, int endIndex) {
         int fadeOutStart = endIndex -  fadeLength;
         for(int j = 0; j < fadeLength; j++) {
-            vocalSample[startIndex + j] *= fadeInFactors[j];
-            vocalSample[fadeOutStart + j] *= fadeOutFactors[j];
+            voiceSample[startIndex + j] *= fadeInFactors[j];
+            voiceSample[fadeOutStart + j] *= fadeOutFactors[j];
         }
     }
 
@@ -215,20 +215,20 @@ public class AutocorrellatedVoiceActivityDetector {
 
     /**
      * Applies autocorrelation in O² operations. Keep arrays very short !
-     * @param vocalSample the vocal sample buffer
+     * @param voiceSample the voice sample buffer
      * @param correllation the correlation buffer
      * @return the mean correlation value
      */
-    private double bruteForceAutocorrelation(double[] vocalSample, double[] correllation) {
+    private double bruteForceAutocorrelation(double[] voiceSample, double[] correllation) {
         Arrays.fill(correllation, 0);
-        int n = vocalSample.length;
+        int n = voiceSample.length;
         for (int j = 0; j < n; j++) {
             for (int i = 0; i < n; i++) {
-                correllation[j] += vocalSample[i] * vocalSample[(n + i - j) % n];
+                correllation[j] += voiceSample[i] * voiceSample[(n + i - j) % n];
             }
         }
         double mean = 0.0d;
-        for(int i = 0; i < vocalSample.length; i++) {
+        for(int i = 0; i < voiceSample.length; i++) {
             mean += correllation[i];
         }
         return mean / correllation.length;        

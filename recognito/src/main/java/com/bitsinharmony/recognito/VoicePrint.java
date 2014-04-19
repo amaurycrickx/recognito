@@ -23,11 +23,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import com.bitsinharmony.recognito.distances.DistanceCalculator;
 
 /**
- * Represents a vocal print in the system
+ * Represents a voice print in the system
  * 
  * @author Amaury Crickx
  */
-public class VocalPrint
+public class VoicePrint
         implements Serializable {
 
     private static final long serialVersionUID = 5656438598778733593L;
@@ -43,44 +43,44 @@ public class VocalPrint
     /**
      * Package visible constructor for Hibernate and the likes
      */
-    VocalPrint() {}
+    VoicePrint() {}
 
     /**
-     * Contructor for a vocal print
+     * Contructor for a voice print
      * @param features the features
      */
-    VocalPrint(double[] features) {
+    VoicePrint(double[] features) {
         super();
         this.features = features;
         this.meanCount = 1;
     }
 
     /**
-     * Returns the distance between this vocal print and the given one using the calculator.
-     * Threading : it is safe to call this method while other threads may merge this vocal print instance
-     * with another one in the sense that the distance calculation will not happen on half merged vocal print.
+     * Returns the distance between this voice print and the given one using the calculator.
+     * Threading : it is safe to call this method while other threads may merge this voice print instance
+     * with another one in the sense that the distance calculation will not happen on half merged voice print.
      * Since this method is read only, it is safe to call it from multiple threads for a single instance
      * @param calculator the distance calculator
-     * @param vocalPrint the vocal print
+     * @param voicePrint the voice print
      * @return the distance
      */
-    double getDistance(DistanceCalculator calculator, VocalPrint vocalPrint) {
+    double getDistance(DistanceCalculator calculator, VoicePrint voicePrint) {
         r.lock();
         try { 
-            return calculator.getDistance(this.features, vocalPrint.features);
+            return calculator.getDistance(this.features, voicePrint.features);
         } 
         finally { r.unlock(); }
     }
 
     /**
-     * Merges this vocal print features with the given one.
-     * Threading : it is safe to call this method while other threads may request the distance of this vocal 
-     * regarding another one in the sense that the distance calculation will not happen on half merged vocal print
+     * Merges this voice print features with the given one.
+     * Threading : it is safe to call this method while other threads may request the distance of this voice 
+     * regarding another one in the sense that the distance calculation will not happen on half merged voice print
      * @param features the features to merge
      */
     void merge(double[] features) {
         if(this.features.length != features.length) {
-            throw new IllegalArgumentException("Features of new VocalPrint is of different size : [" + 
+            throw new IllegalArgumentException("Features of new VoicePrint is of different size : [" + 
                     features.length + "] expected [" + this.features.length + "]");
         }
         w.lock();

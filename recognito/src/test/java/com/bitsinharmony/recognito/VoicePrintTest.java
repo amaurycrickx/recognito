@@ -27,13 +27,13 @@ import org.junit.Test;
 import com.bitsinharmony.recognito.distances.DistanceCalculator;
 
 /**
- * Tests for the VocalPrint class
+ * Tests for the VoicePrint class
  * 
  * @author Amaury Crickx
  */
-public class VocalPrintTest {
+public class VoicePrintTest {
     
-    private VocalPrint vocalPrint;
+    private VoicePrint voicePrint;
     
     private double[] features1;
     private double[] features2;
@@ -44,14 +44,14 @@ public class VocalPrintTest {
         features1 = new double[] { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
         features2 = new double[] { 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0 };
         features3 = new double[] { 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0 };
-        vocalPrint = new VocalPrint(features1);
+        voicePrint = new VoicePrint(features1);
     }
 
     @Test
-    public void getDistanceDelegatesToDistanceCalculator(@Injectable final VocalPrint vp) {
+    public void getDistanceDelegatesToDistanceCalculator(@Injectable final VoicePrint vp) {
         final double d = 100;
         
-        double distance = vocalPrint.getDistance(new DistanceCalculator() {
+        double distance = voicePrint.getDistance(new DistanceCalculator() {
             @Override public double getDistance(double[] features1, double[] features2) {
                 return d;
             }
@@ -61,12 +61,12 @@ public class VocalPrintTest {
     }
 
     @Test
-    public void mergeMutatesTheFeaturesByComputingMeanValue(@Injectable final VocalPrint vp) {
+    public void mergeMutatesTheFeaturesByComputingMeanValue(@Injectable final VoicePrint vp) {
         
-        vocalPrint.merge(features2);
-        vocalPrint.merge(features3);
+        voicePrint.merge(features2);
+        voicePrint.merge(features3);
 
-        vocalPrint.getDistance(new DistanceCalculator() {
+        voicePrint.getDistance(new DistanceCalculator() {
             @Override public double getDistance(double[] features1, double[] features2) {
                 for(int i = 0; i < features1.length; i++) {
                     // 1.0 + 2.0 + 3.0 / 3 = 2.0
@@ -79,6 +79,6 @@ public class VocalPrintTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void mergeThrowsIllegalArgumentExceptionWhenFeaturesSizeIsDifferentThanInitial() {
-        vocalPrint.merge(new double[features1.length + 1]);
+        voicePrint.merge(new double[features1.length + 1]);
     }
 }

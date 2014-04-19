@@ -1,6 +1,10 @@
 **Recognito : Text Independent Speaker Recognition in Java**
 ============================================================
 
+## Contact and support
+
+https://groups.google.com/d/forum/recognito
+
 ## What to expect
 
 While the lib truly is in its very early stage of development, it is already functional : out of 500 speaker voices extracted from Ted.com talks, Recognito identifies them all.

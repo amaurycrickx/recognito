@@ -24,7 +24,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
- * Utility methods for loding vocal samples from files
+ * Utility methods for loding voice samples from files
  * 
  * @author Amaury Crickx
  */
