@@ -3,7 +3,7 @@
 
 ## Contact and support
 
-https://groups.google.com/d/forum/recognito
+https://groups.google.com/d/forum/recognito 
 
 ## What to expect
 
