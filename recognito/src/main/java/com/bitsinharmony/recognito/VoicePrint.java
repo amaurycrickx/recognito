@@ -17,6 +17,7 @@
 package com.bitsinharmony.recognito;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -27,7 +28,7 @@ import com.bitsinharmony.recognito.distances.DistanceCalculator;
  * 
  * @author Amaury Crickx
  */
-public class VoicePrint
+public final class VoicePrint
         implements Serializable {
 
     private static final long serialVersionUID = 5656438598778733593L;
@@ -53,6 +54,14 @@ public class VoicePrint
         super();
         this.features = features;
         this.meanCount = 1;
+    }
+
+    /**
+     * Copy constructor
+     * @param print the VoicePrint to copy
+     */
+    VoicePrint(VoicePrint print) {
+        this(Arrays.copyOf(print.features, print.features.length));
     }
 
     /**
@@ -92,6 +101,15 @@ public class VoicePrint
     }
 
     /**
+     * Convenience method to merge voice prints
+     * @param print the voice print to merge
+     * @see VoicePrint#merge(double[])
+     */
+    void merge(VoicePrint print) {
+        this.merge(print.features); 
+    }
+
+    /**
      * Recomputes the mean values for the inner features when adding the outer features
      * @param inner the inner features
      * @param outer the outer features
@@ -101,4 +119,13 @@ public class VoicePrint
             inner[i] = (inner[i] * meanCount + outer[i]) / (meanCount + 1);
         }
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return Arrays.toString(features);
+    }
+    
 }

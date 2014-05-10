@@ -16,7 +16,7 @@ Indeed, the Ted based test is quite biased :
 - professional speakers usually speak loud and clear
 - vocal samples (both training and identifying ones) were extracted from a single recording session, which means the surrounding noise and the average volume of the voice remains stable
 
-So the vocal print extraction works as advertised but "probably" won't be able to cope with vocal samples of the same speaker coming from various recording systems with huge differences and/or very different sounding environments. 
+So the voice print extraction works as advertised but "probably" won't be able to cope with vocal samples of the same speaker coming from various recording systems with huge differences and/or very different sounding environments. 
 
 Please note, I used the word "probably" so basic testing on your side should rapidly provide better insight on whether or not the current state of Recognito is suitable for your particular use case.
 
@@ -40,19 +40,22 @@ These are mostly software design issues and I wanted to aim at those first befor
 ```
 Recognito<String> recognito = new Recognito<>();
 
-VocalPrint print = recognito.createVocalPrint("Elvis", new File("OldInterview.wav"));
+VoicePrint print = recognito.createVoicePrint("Elvis", new File("OldInterview.wav"));
 
 // handle persistence the way you want, e.g.:
 // myUser.setVocalPrint(print);
 // userDao.saveOrUpdate(myUser);
         
 // Now check if the King is back
-List<String> matches = recognito.recognize(new File("SomeFatGuy.wav"));
-        
-System.out.println("Elvis is back : " + matches.get(0).equals("Elvis"));
+List<MatchResult<String>> matches = recognito.identify(new File("SomeFatGuy.wav"));
+MatchResult<String> match = matches.get(0);
+
+if(match.getKey().equals("Elvis")) {
+	System.out.println("Elvis is back !!! " + match.getLikelihoodRatio() + "% positive about it...");
+}
 ```
 
-Admittedly, this should be easy enough when you're using files but it's not the whole story. Please check the API for other vocal print extraction methods in case files are not an option for you.
+Admittedly, this should be easy enough when you're using files but it's not the whole story. Please check the API for other voice print extraction methods in case files are not an option for you. The Javadoc should help a lot too...
 
 One missing feature that's high on my TODO list is automatic handling of microphone input : automatically stop when the user stops talking or after a predefined delay.
 
@@ -61,4 +64,4 @@ Amaury Crickx : I am by no means a speech processing academic expert, just a Jav
 
 So if you happen to have some knowledge of Speaker Recognition and want to help, you're most welcome !
 
-FWIW, I'll be presenting "Vocal Print for Dummies" at DevoxxFR 2014 with the help of this lib as didactic material.
+FWIW, I've presented "Voice Print for Dummies" at Devoxx France 2014 with the help of this lib as didactic material. Soon freely available on www.parleys.com... (in French)

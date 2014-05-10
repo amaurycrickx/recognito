@@ -43,7 +43,7 @@ public class FileHelper {
                 localIs = AudioSystem.getAudioInputStream(format, is);
             } else {
                 throw new UnsupportedAudioFileException("Alas, the system could not decode your file type." +
-                		"Try converting your file to some PCM 16bit 22050 Hz mono file format using dedicated " +
+                		"Try converting your file to some PCM 16bit 16000 Hz mono file format using dedicated " +
                 		"software. (Hint : http://sox.sourceforge.net/");
             }
         } else {

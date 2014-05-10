@@ -19,11 +19,14 @@ package com.bitsinharmony.recognito;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -47,41 +50,61 @@ import com.bitsinharmony.recognito.vad.AutocorrellatedVoiceActivityDetector;
  * <ul>
  * <li>Create a voice print from an audio sample and store it with an associated user key</li>
  * <li>Merge a new voice sample into an existing voice print</li>
- * <li>Speaker recognition : analyse voice characteristics from an unknown sample and return user keys 
- * whose voice print are closest matches</li>
+ * <li>Speaker recognition : analyse voice characteristics from an unknown sample and return a {@code List}
+ * of {@code MatchResult}s sorted by distance. A likelihood ratio is provided within each {@code MatchResult}.</li>
  * </ul>
  * <p>
- * Recognito expects all voice samples to be comprised of a single channel (i.e. mono). Using a stereo sample 
+ * {@code Recognito} expects all voice samples to be comprised of a single channel (i.e. mono). Using a stereo sample 
  * whose channels are identical will merely double processing time. Using a real stereo sample will make 
  * the processing less accurate while doubling processing time.<br/>
  * </p>
  * <p>
- * {@code Recognito} is generified in order to allow the user to specify its own type of user keys.
- * The constraints on user keys are the same as those for {@code java.util.Map} a key<br/>
- * </p>
- * <p>
- * It is up to the client to manage persistence of the created voice print objects. Persisted voice prints
- * may be passed into an alternate constructor as a Map of user keys pointing to a voice print.
+ * It is up to the user to manage persistence of the created voice print objects. Persisted voice prints
+ * may be passed into an alternate {@code Recognito} constructor as a {@code Map} of user keys pointing to a voice print.
  * </p>
  * <p>
  * For methods taking a file handle :<br/>
  * Supporting each and every file formats is a real pain and not the primary goal of Recognito. As such,
- * the conversion capabilities of the javax.sound.sampled are used internally.
+ * the conversion capabilities of the javax.sound.sampled package are used internally.
  * Depending on your particular JVM implementation, some file types may or may not be supported.
- * If you're looking for MP3 or Ogg support, check Javazoom SPI's.
- * In case you may choose, Recognito's preferred file format is PCM 16bit mono 22050 Hz (WAV files are PCM)<br/>
+ * If you're looking for MP3 or Ogg support, check Javazoom SPI's. This said, the higher the sample quality, the better the results.
+ * In case you may choose, {@code Recognito}'s preferred file format is PCM 16bit mono 16000 Hz (WAV files are PCM)<br/>
  * You may also want to check http://sox.sourceforge.net for dedicated conversion software.
  * </p>
  * <p>
- * Threading : usage of Recognito is thread safe, see methods documentation for details
+ * Please note the sample rate is actually twice the highest audio frequency of the sample. E.g. a sample rate of 8KHz means
+ * that the highest frequency available in the sample is 4KHz. So you can't resample at a higher frequency and expect 
+ * the voice samples to be comparable, some frequencies will be missing. You may downsample, but if don't know how to do that 
+ * correctly, you're better off using dedicated software. For the purpose of extracting voice prints, 
+ * 16KHz appears to be the most interesting choice. 
  * </p>
+ * <p>
+ * The likelihood ratio available within the {@code MatchResult}s is calculated as the relative distance between the given voice sample, 
+ * a known {@code VoicePrint} and a so called Universal Model. The universal model in {@code Recognito} is by default created as an average of all
+ * {@code VoicePrint}s available in the system. The closer you are to the known {@code VoicePrint}, the higher the likelihood. 
+ * Each time a new sample is sent to {@code Recognito}'s create or merge methods, the extracted features are added to the model. 
+ * You may create your own model by merging a selected set of voice samples into a single {@code VoicePrint}. 
+ * Once done, you may set this model once and for all in {@code Recognito}, it won't be updated afterwards.
+ * A Universal Model is language dependent. At this very moment, it doesn't look realistic that {@code Recognito} would provide  
+ * generic models for each and every language. Furthermore, the recording system you're using will also severely impact the relevance of a 
+ * generic model in that the sonic characteristics will be quite different from one system to another. In other words, providing generic 
+ * models would most probably create likelihood ratios that are unreasonably high because far from your own recordings and thus irrelevant.  
+ * </p>
+ * <p>
+ * Threading : usage of {@code Recognito} is thread safe, see methods documentation for details
+ * </p>
+ * @param <K> {@code Recognito} is genericized in order to allow the user to specify its own type of user keys.
+ * The constraints on user keys are the same as those for a {@code java.util.Map} key 
  * @author Amaury Crickx
  * @see {@link java.util.Map} for the constraints on Key objects
  */
 public class Recognito<K> {
-
+    
     private final ConcurrentHashMap<K, VoicePrint> store = new ConcurrentHashMap<K, VoicePrint>();
 
+    private final AtomicBoolean universalModelWasSetByUser = new AtomicBoolean();
+    private VoicePrint universalModel;
+    
     /**
      * Default constructor
      */
@@ -92,7 +115,36 @@ public class Recognito<K> {
      * Constructor taking previously extracted voice prints directly into the system
      */
     public Recognito(Map<K, VoicePrint> voicePrintsByUserKey) {
+        Iterator<VoicePrint> it = voicePrintsByUserKey.values().iterator();
+        if (it.hasNext()) {
+            VoicePrint print = it.next();
+            universalModel = new VoicePrint(print);            
+            while (it.hasNext()) {
+                universalModel.merge(it.next());
+            }
+        }
         store.putAll(voicePrintsByUserKey);
+    }
+    
+    /**
+     * Get the universal model
+     * @return the universal model
+     */
+    public VoicePrint getUniversalModel() {
+        return new VoicePrint(universalModel);
+    }
+    
+    /**
+     * Sets the universal model to be used to calculate likelihood ratios
+     * Once set, further voice print create / merge operations won't modify this model
+     * @param universalModel the universal model to set, may not be null
+     */
+    public synchronized void setUniversalModel(VoicePrint universalModel) {
+        if(universalModel == null) {
+            throw new IllegalArgumentException("The universal model may not be null");
+        }
+        this.universalModelWasSetByUser.set(false);
+        this.universalModel = universalModel;
     }
     
     /**
@@ -110,11 +162,21 @@ public class Recognito<K> {
             throw new NullPointerException("The userKey is null");
         }
         if(store.containsKey(userKey)) {
-            throw new IllegalArgumentException("The userKey already exists");
+            throw new IllegalArgumentException("The userKey already exists: [" + userKey + "]");
         }
+        
         double[] features = extractFeatures(voiceSample, sampleRate);
         VoicePrint voicePrint = new VoicePrint(features);
-        
+         
+        synchronized (this) {
+            if (!universalModelWasSetByUser.get()) {
+                if (universalModel == null) {
+                    universalModel = new VoicePrint(voicePrint);
+                } else {
+                    universalModel.merge(features);
+                }
+            }
+        }
         store.put(userKey, voicePrint);
         
         return voicePrint;
@@ -161,10 +223,16 @@ public class Recognito<K> {
         
         VoicePrint original = store.get(userKey);
         if(original == null) {
-            throw new IllegalArgumentException("No voice print linked to this user key");
+            throw new IllegalArgumentException("No voice print linked to this user key [" + userKey + "]");
         }
 
-        original.merge(extractFeatures(voiceSample, sampleRate));
+        double[] features = extractFeatures(voiceSample, sampleRate);
+        synchronized (this) {
+            if(!universalModelWasSetByUser.get()) {
+                universalModel.merge(features);
+            }
+        }
+        original.merge(features);
         
         return original;
     }
@@ -193,59 +261,65 @@ public class Recognito<K> {
 
     /**
      * Calculates the distance between this voice sample and the voice prints previously extracted 
-     * and returns the associated user keys of the 3 closest matches
+     * and returns the closest matches sorted by distance
      * <p>
      * Usage of a closed set is assumed : the speaker's voice print was extracted before and is known to the system.
-     * This means you'll always get results even if the speaker is absolutely unknown to the system.
-     * Future versions of the framework will provide a level of likelihood in the response and implement some 
-     * decision logic whether the match is worth mentioning at all.
+     * This means you'll always get MatchResults even if the speaker is absolutely unknown to the system.
+     * The MatchResult class provides a likelihood ratio in order to help determining the usefulness of the result
      * </p>
      * @param voiceSample the voice sample, values between -1.0 and 1.0
      * @param sampleRate the sample rate
-     * @return a list of user keys that might match this voice sample
+     * @return a list MatchResults sorted by distance
      */
-    public List<K> recognize(double[] voiceSample, float sampleRate) {
+    public List<MatchResult<K>> identify(double[] voiceSample, float sampleRate) {
+        
+        if(store.isEmpty()) {
+            throw new IllegalStateException("There is no voice print enrolled in the system yet");
+        }
 
         VoicePrint voicePrint = new VoicePrint(extractFeatures(voiceSample, sampleRate));
         
         DistanceCalculator calculator = new EuclideanDistanceCalculator();
-        Map<Double, K> results = new TreeMap<Double, K>();
+        List<MatchResult<K>> matches = new ArrayList<MatchResult<K>>(store.size());
 
+        double distanceFromUniversalModel = voicePrint.getDistance(calculator, universalModel);
         for (Entry<K, VoicePrint> entry : store.entrySet()) {
             double distance = entry.getValue().getDistance(calculator, voicePrint);
-            results.put(distance, entry.getKey());
+            // likelihood : how close is the given voice sample to the current VoicePrint 
+            // compared to the total distance between the current VoicePrint and the universal model 
+            int likelihood = 100 - (int) (distance / (distance + distanceFromUniversalModel) * 100);
+            matches.add(new MatchResult<K>(entry.getKey(), likelihood, distance));
         }
-        
-        List<K> returnValue = new ArrayList<K>();
-        int i = 0;
-        for(Entry<Double, K> entry : results.entrySet()) {
-            returnValue.add(entry.getValue());
-            if(++i == 3) {
-                break;
+
+        Collections.sort(matches, new Comparator<MatchResult<K>>() {
+            @Override
+            public int compare(MatchResult<K> m1, MatchResult<K> m2) {
+                return Double.compare(m1.getDistance(), m2.getDistance());
             }
-        }
-        return returnValue;
+        });
+        
+        return matches;
     }
   
     /**
-     * Convenience method to recognize voice samples from files.
+     * Convenience method to identify voice samples from files.
      * <p>
      * See class description for details on files
      * </p>
      * @param voiceSampleFile the file containing the voice sample
-     * @return a list of user keys that might match this voice sample
-     * @throws UnsupportedAudioFileException when the JVM does not support the file format
+     * @return a list MatchResults sorted by distance
+     * @throws UnsupportedAudioFileException when the JVM does not support the audio file format
      * @throws IOException when an I/O exception occurs
-     * @see Recognito#recognize(double[], float)
+     * @see Recognito#identify(double[], float)
      */
-    public  List<K> recognize(File voiceSampleFile) 
+    public  List<MatchResult<K>> identify(File voiceSampleFile) 
             throws UnsupportedAudioFileException, IOException {
         
         AudioInputStream sample = AudioSystem.getAudioInputStream(voiceSampleFile);
         AudioFormat format = sample.getFormat();
         double[] audioSample = FileHelper.readAudioInputStream(sample);
 
-        return recognize(audioSample, format.getSampleRate());
+        return identify(audioSample, format.getSampleRate());
     }
   
     /**

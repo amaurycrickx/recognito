@@ -74,7 +74,6 @@ public class LpcFeaturesExtractorTest {
             @Mock double[][] applyLinearPredictiveCoding(double[] window) {
                 double[][] result = new double[2][20];
                 Arrays.fill(result[0], value);
-                System.out.println(value);
                 value++;
                 return result;
             }
