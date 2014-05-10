@@ -99,22 +99,34 @@ import com.bitsinharmony.recognito.vad.AutocorrellatedVoiceActivityDetector;
  * @see {@link java.util.Map} for the constraints on Key objects
  */
 public class Recognito<K> {
+
+    private static final float MIN_SAMPLE_RATE = 8000.0f;
     
     private final ConcurrentHashMap<K, VoicePrint> store = new ConcurrentHashMap<K, VoicePrint>();
+    private final float sampleRate;
 
     private final AtomicBoolean universalModelWasSetByUser = new AtomicBoolean();
     private VoicePrint universalModel;
+
     
     /**
      * Default constructor
+     * @param sampleRate the sample rate, at least 8000.0 Hz (preferably higher)
      */
-    public Recognito() {
+    public Recognito(float sampleRate) {
+        if(sampleRate < MIN_SAMPLE_RATE) {
+            throw new IllegalArgumentException("Sample rate should be at least 8000 Hz");
+        }
+        this.sampleRate = sampleRate;
     }
     
     /**
      * Constructor taking previously extracted voice prints directly into the system
+     * @param sampleRate the sample rate, at least 8000.0 Hz (preferably higher)
+     * @param voicePrintsByUserKey a {@code Map} containing user keys and their respective {@code VoicePrint}
      */
-    public Recognito(Map<K, VoicePrint> voicePrintsByUserKey) {
+    public Recognito(float sampleRate, Map<K, VoicePrint> voicePrintsByUserKey) {
+        this(sampleRate);
         Iterator<VoicePrint> it = voicePrintsByUserKey.values().iterator();
         if (it.hasNext()) {
             VoicePrint print = it.next();
@@ -154,10 +166,9 @@ public class Recognito<K> {
      * </p>
      * @param userKey the user key associated with this voice print
      * @param voiceSample the voice sample, values between -1.0 and 1.0
-     * @param sampleRate the sample rate, at least 8000.0 Hz (preferably higher)
      * @return the voice print extracted from the given sample
      */
-    public synchronized VoicePrint createVoicePrint(K userKey, double[] voiceSample, float sampleRate) {
+    public synchronized VoicePrint createVoicePrint(K userKey, double[] voiceSample) {
         if(userKey == null) {
             throw new NullPointerException("The userKey is null");
         }
@@ -188,7 +199,7 @@ public class Recognito<K> {
      * See class description for details on files
      * </p>
      * @param userKey the user key associated with this voice print
-     * @param voiceSampleFile the file containing the voice sample
+     * @param voiceSampleFile the file containing the voice sample, must have the same sample rate as defined in constructor
      * @return the voice print
      * @throws UnsupportedAudioFileException when the JVM does not support the file format
      * @throws IOException when an I/O exception occurs
@@ -197,11 +208,29 @@ public class Recognito<K> {
     public VoicePrint createVoicePrint(K userKey, File voiceSampleFile) 
             throws UnsupportedAudioFileException, IOException {
         
+        double[] audioSample = convertFileToDoubleArray(voiceSampleFile);
+
+        return createVoicePrint(userKey, audioSample);
+    }
+
+    /**
+     * Converts the given audio file to an array of doubles with values between -1.0 and 1.0
+     * @param voiceSampleFile the file to convert
+     * @return an array of doubles
+     * @throws UnsupportedAudioFileException when the JVM does not support the file format
+     * @throws IOException when an I/O exception occurs
+     */
+    private double[] convertFileToDoubleArray(File voiceSampleFile) 
+            throws UnsupportedAudioFileException, IOException {
+        
         AudioInputStream sample = AudioSystem.getAudioInputStream(voiceSampleFile);
         AudioFormat format = sample.getFormat();
-        double[] audioSample = FileHelper.readAudioInputStream(sample);
-
-        return createVoicePrint(userKey, audioSample, format.getSampleRate());
+        float diff = Math.abs(format.getSampleRate() - sampleRate);
+        if(diff > 5 * Math.ulp(0.0f)) {
+            throw new IllegalArgumentException("The sample rate for this file is different than Recognito's " +
+            		"defined sample rate : [" + format.getSampleRate() + "]");
+        }
+        return FileHelper.readAudioInputStream(sample);
     }
     
     /**
@@ -212,10 +241,9 @@ public class Recognito<K> {
      * </p>
      * @param userKey the user key associated with this voice print
      * @param voiceSample the voice sample to analyze, values between -1.0 and 1.0
-     * @param sampleRate the sample rate, at least 8000.0 Hz (preferably higher)
      * @return the updated voice print
      */
-    public VoicePrint mergeVoiceSample(K userKey, double[] voiceSample, float sampleRate) {
+    public VoicePrint mergeVoiceSample(K userKey, double[] voiceSample) {
         
         if(userKey == null) {
             throw new NullPointerException("The userKey is null");
@@ -243,7 +271,7 @@ public class Recognito<K> {
      * See class description for details on files
      * </p>
      * @param userKey the user key associated with this voice print
-     * @param voiceSampleFile the file containing the voice sample
+     * @param voiceSampleFile the file containing the voice sample, must have the same sample rate as defined in constructor
      * @return the updated voice print
      * @throws UnsupportedAudioFileException when the JVM does not support the file format
      * @throws IOException when an I/O exception occurs
@@ -252,11 +280,9 @@ public class Recognito<K> {
     public VoicePrint mergeVoiceSample(K userKey, File voiceSampleFile) 
             throws UnsupportedAudioFileException, IOException {
         
-        AudioInputStream sample = AudioSystem.getAudioInputStream(voiceSampleFile);
-        AudioFormat format = sample.getFormat();
-        double[] audioSample = FileHelper.readAudioInputStream(sample);
+        double[] audioSample = convertFileToDoubleArray(voiceSampleFile);
 
-        return mergeVoiceSample(userKey, audioSample, format.getSampleRate());
+        return mergeVoiceSample(userKey, audioSample);
     }
 
     /**
@@ -268,10 +294,9 @@ public class Recognito<K> {
      * The MatchResult class provides a likelihood ratio in order to help determining the usefulness of the result
      * </p>
      * @param voiceSample the voice sample, values between -1.0 and 1.0
-     * @param sampleRate the sample rate
      * @return a list MatchResults sorted by distance
      */
-    public List<MatchResult<K>> identify(double[] voiceSample, float sampleRate) {
+    public List<MatchResult<K>> identify(double[] voiceSample) {
         
         if(store.isEmpty()) {
             throw new IllegalStateException("There is no voice print enrolled in the system yet");
@@ -315,11 +340,9 @@ public class Recognito<K> {
     public  List<MatchResult<K>> identify(File voiceSampleFile) 
             throws UnsupportedAudioFileException, IOException {
         
-        AudioInputStream sample = AudioSystem.getAudioInputStream(voiceSampleFile);
-        AudioFormat format = sample.getFormat();
-        double[] audioSample = FileHelper.readAudioInputStream(sample);
+        double[] audioSample = convertFileToDoubleArray(voiceSampleFile);
 
-        return identify(audioSample, format.getSampleRate());
+        return identify(audioSample);
     }
   
     /**

@@ -38,7 +38,8 @@ These are mostly software design issues and I wanted to aim at those first befor
 ## Usage
 
 ```
-Recognito<String> recognito = new Recognito<>();
+// Create a new Recognito instance defining the audio sample rate to be used
+Recognito<String> recognito = new Recognito<>(16000.0f);
 
 VoicePrint print = recognito.createVoicePrint("Elvis", new File("OldInterview.wav"));
 

@@ -47,7 +47,7 @@ public class RecognitoTest {
         }
     }
 
-    private static final int DEFAULT_SAMPLE_RATE = 22050;
+    private static final float DEFAULT_SAMPLE_RATE = 22050f;
     private final Random random = new Random();
 
     private Recognito<String> recognito;
@@ -55,36 +55,36 @@ public class RecognitoTest {
     
     @Before
     public void setUp() {
-        recognito = new Recognito<String>();
+        recognito = new Recognito<String>(DEFAULT_SAMPLE_RATE);
         voiceSample = new double[1024];
         fillWithNoise(voiceSample);
     }
     
     @Test(expected = NullPointerException.class)
     public void createVoicePrintThrowsNullPointerExceptionWhenTheUserKeyIsNull() {
-        recognito.createVoicePrint(null, voiceSample, DEFAULT_SAMPLE_RATE);
+        recognito.createVoicePrint(null, voiceSample);
     }
     
     @Test
     public void createVoicePrintReturnsVoicePrint() {
-        VoicePrint voicePrint = recognito.createVoicePrint("duh", voiceSample, DEFAULT_SAMPLE_RATE);
+        VoicePrint voicePrint = recognito.createVoicePrint("duh", voiceSample);
         assertNotNull(voicePrint);
     }
     
     @Test(expected = NullPointerException.class)
     public void mergeVoiceSampleThrowsNullPointerExceptionWhenTheUserKeyIsNull() {
-        recognito.mergeVoiceSample(null, voiceSample, DEFAULT_SAMPLE_RATE);
+        recognito.mergeVoiceSample(null, voiceSample);
     }
     
     @Test(expected = IllegalArgumentException.class)
     public void mergeVoiceSampleThrowsIllegalArgumentExceptionWhenTheUserKeyIsUnknown() {
-        recognito.mergeVoiceSample("duh", voiceSample, DEFAULT_SAMPLE_RATE);
+        recognito.mergeVoiceSample("duh", voiceSample);
     }
     
     @Test
     public void mergeVoiceSampleForMergesTheNewFeaturesWithThePreviousVoicePrintInstance(@Mocked final VoicePrint unused) {
-        final VoicePrint initial = recognito.createVoicePrint("test", voiceSample, DEFAULT_SAMPLE_RATE);
-        recognito.mergeVoiceSample("test", voiceSample, DEFAULT_SAMPLE_RATE);
+        final VoicePrint initial = recognito.createVoicePrint("test", voiceSample);
+        recognito.mergeVoiceSample("test", voiceSample);
         
         new Verifications() {{
             onInstance(initial).merge((double[]) any);
@@ -93,16 +93,16 @@ public class RecognitoTest {
     
     @Test(expected = IllegalStateException.class)
     public void identifyBreaksWhenNoVoicePrintWasPreviouslyExtracted() {
-       recognito.identify(voiceSample, DEFAULT_SAMPLE_RATE);
+       recognito.identify(voiceSample);
     }
     
     @Test
     public void identifyReturnsListOfMatchResultsOrderedByClosestDistance() {
-        final VoicePrint vp1 = recognito.createVoicePrint("1", voiceSample, DEFAULT_SAMPLE_RATE);
-        final VoicePrint vp2 = recognito.createVoicePrint("2", voiceSample, DEFAULT_SAMPLE_RATE);
-        final VoicePrint vp3 = recognito.createVoicePrint("3", voiceSample, DEFAULT_SAMPLE_RATE);
-        final VoicePrint vp4 = recognito.createVoicePrint("4", voiceSample, DEFAULT_SAMPLE_RATE);
-        final VoicePrint vp5 = recognito.createVoicePrint("5", voiceSample, DEFAULT_SAMPLE_RATE);
+        final VoicePrint vp1 = recognito.createVoicePrint("1", voiceSample);
+        final VoicePrint vp2 = recognito.createVoicePrint("2", voiceSample);
+        final VoicePrint vp3 = recognito.createVoicePrint("3", voiceSample);
+        final VoicePrint vp4 = recognito.createVoicePrint("4", voiceSample);
+        final VoicePrint vp5 = recognito.createVoicePrint("5", voiceSample);
 
         new NonStrictExpectations(vp1, vp2, vp3, vp4, vp5) {{
             vp1.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 5.0D;
@@ -112,7 +112,7 @@ public class RecognitoTest {
             vp5.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 1.0D;
         }};
         
-        List<MatchResult<String>> matches = recognito.identify(voiceSample, DEFAULT_SAMPLE_RATE);
+        List<MatchResult<String>> matches = recognito.identify(voiceSample);
 
         assertThat(matches.get(0).getKey(), is(equalTo("5")));
         assertThat(matches.get(1).getKey(), is(equalTo("4"))); 
@@ -125,9 +125,9 @@ public class RecognitoTest {
     @Test
     public void identifyDoesntBreakWithOnlyOneSpeaker() {
         
-        recognito.createVoicePrint("1", voiceSample, DEFAULT_SAMPLE_RATE);
+        recognito.createVoicePrint("1", voiceSample);
 
-        List<MatchResult<String>> matches = recognito.identify(voiceSample, DEFAULT_SAMPLE_RATE);
+        List<MatchResult<String>> matches = recognito.identify(voiceSample);
 
         assertThat(matches.get(0).getKey(), is(equalTo("1")));
         assertThat(matches.size(), is(equalTo(1)));
@@ -140,9 +140,9 @@ public class RecognitoTest {
         final double[] voiceSample2 = new double[1024];
         fillWithNoise(voiceSample2);
 
-        recognito.createVoicePrint("1", voiceSample, DEFAULT_SAMPLE_RATE);
+        recognito.createVoicePrint("1", voiceSample);
         
-        List<MatchResult<String>> matches = recognito.identify(voiceSample2, DEFAULT_SAMPLE_RATE);
+        List<MatchResult<String>> matches = recognito.identify(voiceSample2);
         
         MatchResult<String> match = matches.get(0);
         assertThat(match.getLikelihoodRatio(), is(equalTo(50)));
@@ -151,7 +151,7 @@ public class RecognitoTest {
     @Test
     public void universalModelIsEqualToSingleEntry() {
         
-        VoicePrint vp = recognito.createVoicePrint("1", voiceSample, DEFAULT_SAMPLE_RATE);
+        VoicePrint vp = recognito.createVoicePrint("1", voiceSample);
         VoicePrint universalModel = recognito.getUniversalModel();
         
         double distance = vp.getDistance(new EqualityDistanceCalculator(), universalModel);
@@ -167,8 +167,8 @@ public class RecognitoTest {
 
         final double[] voiceSample2 = new double[1024];
         fillWithNoise(voiceSample2);
-        recognito.createVoicePrint("1", voiceSample, DEFAULT_SAMPLE_RATE);
-        recognito.mergeVoiceSample("1", voiceSample2, DEFAULT_SAMPLE_RATE);
+        recognito.createVoicePrint("1", voiceSample);
+        recognito.mergeVoiceSample("1", voiceSample2);
         
         VoicePrint universalModel2 = recognito.getUniversalModel();
         double distance = universalModel2.getDistance(new EqualityDistanceCalculator(), universalModel);
@@ -182,10 +182,10 @@ public class RecognitoTest {
         final double[] voiceSample2 = new double[1024];
         fillWithNoise(voiceSample2);
         
-        recognito.createVoicePrint("1", voiceSample, DEFAULT_SAMPLE_RATE);
+        recognito.createVoicePrint("1", voiceSample);
         VoicePrint universalModel = recognito.getUniversalModel();
 
-        recognito.createVoicePrint("2", voiceSample2, DEFAULT_SAMPLE_RATE);
+        recognito.createVoicePrint("2", voiceSample2);
         VoicePrint universalModel2 = recognito.getUniversalModel();
         
         double distance = universalModel.getDistance(new EqualityDistanceCalculator(), universalModel2);
@@ -199,10 +199,10 @@ public class RecognitoTest {
         final double[] voiceSample2 = new double[1024];
         fillWithNoise(voiceSample2);
         
-        recognito.createVoicePrint("1", voiceSample, DEFAULT_SAMPLE_RATE);
+        recognito.createVoicePrint("1", voiceSample);
         VoicePrint universalModel = recognito.getUniversalModel();
 
-        recognito.mergeVoiceSample("1", voiceSample2, DEFAULT_SAMPLE_RATE);
+        recognito.mergeVoiceSample("1", voiceSample2);
         VoicePrint universalModel2 = recognito.getUniversalModel();
         
         double distance = universalModel.getDistance(new EqualityDistanceCalculator(), universalModel2);
