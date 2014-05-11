@@ -43,7 +43,8 @@ public class ChebyshevDistanceCalculator
             }
             distance = 0.0;
             for (int i = 0; i < features1.length; i++) {
-                distance += Math.abs(features1[i] - features2[i]);
+                double currentDistance = Math.abs(features1[i] - features2[i]);
+                distance = (currentDistance > distance) ? currentDistance : distance; 
             }
         }
         return distance;
