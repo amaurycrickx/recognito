@@ -19,7 +19,7 @@ package com.bitsinharmony.recognito.distances;
 /**
  * Euclidean distance implementation
  * <p>
- * Threadin : this class is thread safe
+ * Threading : this class is thread safe
  * </p>
  * 
  * @see <a href="http://en.wikipedia.org/wiki/Euclidean_distance">Euclidean distance</a>
@@ -38,7 +38,7 @@ public class EuclideanDistanceCalculator
         double distance = positiveInfinityIfEitherOrBothAreNull(features1, features2);
         if (distance < 0) {
             if(features1.length != features2.length) {
-                throw new IllegalArgumentException("Both features should have the same lenth. Received lengths of [" +
+                throw new IllegalArgumentException("Both features should have the same length. Received lengths of [" +
                         + features1.length + "] and [" + features2.length + "]");
             }
             distance = 0.0;
