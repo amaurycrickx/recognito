@@ -74,12 +74,12 @@ public class ChebyshevDistanceCalculatorTest {
     }
 
     @Test
-    public void reversedIncrementalVectorsOfTewntyReturnsDistanceOfTwoHundred() {
+    public void reversedIncrementalVectorsOfTwentyReturnsDistanceOfNineTeen() {
         int last = identicalA.length - 1;
         for(int i = 0; i < identicalA.length; i++) {
             identicalB[i] = identicalA[last - i];
         }
         double distance = distanceCalculator.getDistance(identicalA, identicalB);
-        assertThat(distance, is(equalTo(200.0)));
+        assertThat(distance, is(equalTo(19.0)));
     }
 }
