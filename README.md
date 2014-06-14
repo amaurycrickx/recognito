@@ -56,6 +56,9 @@ if(match.getKey().equals("Elvis")) {
 }
 ```
 
+Please note Recognito's likelihood ratio is dependent on the number of voices it knows. With a single known voice, the likelihood will always be 50%.
+The more voice prints you add, the more relevant this likelihood becomes...
+
 Admittedly, this should be easy enough when you're using files but it's not the whole story. Please check the API for other voice print extraction methods in case files are not an option for you. The Javadoc should help a lot too...
 
 One missing feature that's high on my TODO list is automatic handling of microphone input : automatically stop when the user stops talking or after a predefined delay.
