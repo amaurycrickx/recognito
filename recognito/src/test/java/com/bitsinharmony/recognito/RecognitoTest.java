@@ -87,7 +87,7 @@ public class RecognitoTest {
         recognito.mergeVoiceSample("test", voiceSample);
         
         new Verifications() {{
-            onInstance(initial).merge((double[]) any);
+            initial.merge((double[]) any);
         }};
     }
     
