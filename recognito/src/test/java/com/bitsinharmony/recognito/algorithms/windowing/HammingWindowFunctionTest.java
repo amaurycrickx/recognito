@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.util.Arrays;
 
@@ -49,7 +50,7 @@ public class HammingWindowFunctionTest {
     @Test 
     public void avoidUnwantedRegressionDueToAlgorithmRefactoring() {
         
-        assertThat(f1, is(equalTo(sample)));
+        assertArrayEquals(sample, f1, 1E-15);
         
         // In case you need to reprint it after an improvement:
         /*
