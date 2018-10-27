@@ -22,9 +22,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.googlecode.jmockit</groupId>
+			<groupId>org.jmockit</groupId>
 			<artifactId>jmockit</artifactId>
-			<version>1.5</version>
+			<version>1.38</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -51,6 +51,13 @@
                 	<source>1.6</source>
                 	<target>1.6</target>
                 </configuration>
+			</plugin>
+			<plugin>
+			<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.20.1</version>
+				<configuration>
+					<argLine>-Djdk.attach.allowAttachSelf</argLine>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

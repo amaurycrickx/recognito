@@ -24,8 +24,8 @@ import static org.junit.Assert.assertThat;
 import java.util.List;
 import java.util.Random;
 
+import mockit.Expectations;
 import mockit.Mocked;
-import mockit.NonStrictExpectations;
 import mockit.Verifications;
 
 import org.junit.Before;
@@ -87,7 +87,7 @@ public class RecognitoTest {
         recognito.mergeVoiceSample("test", voiceSample);
         
         new Verifications() {{
-            onInstance(initial).merge((double[]) any);
+            initial.merge((double[]) any);
         }};
     }
     
@@ -104,7 +104,7 @@ public class RecognitoTest {
         final VoicePrint vp4 = recognito.createVoicePrint("4", voiceSample);
         final VoicePrint vp5 = recognito.createVoicePrint("5", voiceSample);
 
-        new NonStrictExpectations(vp1, vp2, vp3, vp4, vp5) {{
+        new Expectations(vp1, vp2, vp3, vp4, vp5) {{
             vp1.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 5.0D;
             vp2.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 4.0D;
             vp3.getDistance((DistanceCalculator) any, (VoicePrint) any); result = 3.0D;
